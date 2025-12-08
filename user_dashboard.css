@@ -1,0 +1,140 @@
+/* Import font dari Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Open+Sans&display=swap');
+
+/* Reset padding dan box-sizing */
+* {
+    box-sizing: border-box;
+}
+
+/* Styling dasar untuk body dan html */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Open Sans', sans-serif;
+    background: url('https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=1470&q=80') no-repeat center center fixed;
+    background-size: cover;
+    color: #eee;
+    position: relative;
+}
+
+/* Overlay gelap agar teks terlihat jelas di atas gambar */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(20, 20, 20, 0.75);
+    z-index: -1; /* agar di belakang konten */
+}
+
+/* Header bagian atas */
+header {
+    background: rgba(34, 49, 63, 0.85); /* semi transparan */
+    padding: 25px 20px;
+    text-align: center;
+    font-family: 'Merriweather', serif;
+    font-weight: 700;
+    font-size: 2.2rem;
+    letter-spacing: 1.5px;
+    position: relative;
+}
+
+/* Tombol logout di pojok kanan atas */
+.logout {
+    position: absolute;
+    top: 25px;
+    right: 25px;
+    background: #c0392b;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+}
+.logout:hover {
+    background: #e74c3c;
+}
+
+/* Grid container untuk elemen-elemen (kartu menu, misalnya) */
+.container {
+    max-width: 960px;
+    margin: 50px auto;
+    padding: 0 20px 50px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+/* Kartu menu */
+.card {
+    background: rgba(44, 62, 80, 0.85);
+    border-radius: 16px;
+    padding: 30px 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+}
+
+/* Judul pada kartu */
+.card h3 {
+    font-family: 'Merriweather', serif;
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+    color: #f1c40f;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+}
+
+/* Paragraf pada kartu */
+.card p {
+    font-size: 1.05rem;
+    color: #ddd;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+/* Tombol bergaya modern */
+a.button {
+    display: inline-block;
+    background: #27ae60;
+    color: white;
+    text-decoration: none;
+    padding: 12px 25px;
+    font-weight: 600;
+    border-radius: 50px;
+    box-shadow: 0 6px 12px rgba(39, 174, 96, 0.5);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    font-size: 1rem;
+}
+a.button:hover {
+    background: #2ecc71;
+    box-shadow: 0 8px 20px rgba(46, 204, 113, 0.7);
+}
+
+/* Ikon tambahan untuk tombol pinjam buku */
+.button.icon::before {
+    content: "📚 ";
+    font-size: 1.2rem;
+}
+
+@media (max-width: 600px) {
+    header {
+        font-size: 1.5rem;
+        padding: 15px 10px;
+    }
+
+    .logout {
+        padding: 8px 12px;
+        top: 15px;
+        right: 15px;
+    }
+
+    .card {
+        padding: 20px;
+    }
+}
