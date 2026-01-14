@@ -14,7 +14,7 @@ $user_id = $_SESSION['id_user'];
 $query = "
     SELECT t.id, b.judul_buku, b.harga_per_hari, t.tanggal_pinjam, t.tanggal_kembali, t.status
     FROM transactions t
-    JOIN books b ON t.id_book = b.id
+    JOIN books b ON t.id_buku = b.id
     WHERE t.id_user = ?
     ORDER BY t.id DESC
 ";
@@ -26,12 +26,54 @@ $result = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Riwayat Transaksi Saya</title>
     <style>
-        body { font-family: Arial; margin: 30px; }
-        h2 { color: #333; }
+        /* Background Perpustakaan dengan Blur */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            position: relative;
+            color: #333;
+        }
+
+        /* Overlay gelap transparan agar teks tetap terbaca */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Gelap transparan */
+            backdrop-filter: blur(3px);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 25px;
+            background-color: rgba(255, 255, 255, 0.92);
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
 
         table {
             width: 100%;
@@ -39,138 +81,179 @@ $result = $stmt->get_result();
             margin-top: 20px;
         }
         th, td {
-            padding: 12px;
+            padding: 12px 10px;
             text-align: center;
-            border: 1px solid #ccc;
+            border: 1px solid #ddd;
         }
         th {
-            background-color: #007bff;
+            background-color: #2c3e50;
             color: white;
         }
 
         .btn {
             margin-top: 20px;
             padding: 10px 18px;
-            background-color: #007bff;
+            background-color: #3498db;
             color: white;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 6px;
+            display: inline-block;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .status-dipinjam {
+            background-color: #3498db;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
             display: inline-block;
         }
 
-        .btn:hover { background-color: #0056b3; }
-
-        .status-dipinjam {
-            background-color: #007bff;
+        .status-kembali {
+            background-color: #27ae60;
             color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            display: inline-block;
         }
 
-        .status-kembali {
-            background-color: green;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
+        .hapus-button,
+        .kembalikan-button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 8px;
         }
 
         .hapus-button {
             background-color: #e74c3c;
             color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
+        }
+        .hapus-button:hover {
+            background-color: #c0392b;
         }
 
-        .hapus-button:hover { background-color: #c0392b; }
+        .kembalikan-button {
+            background-color: #f39c12;
+            color: white;
+        }
+        .kembalikan-button:hover {
+            background-color: #d35400;
+        }
+
+        .edit-link {
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 0.9em;
+            margin-top: 8px;
+        }
+        .edit-link:hover {
+            background-color: #2980b9;
+        }
 
         .no-transaksi {
-            margin-top: 20px;
+            text-align: center;
             font-style: italic;
-            color: #888;
+            color: #7f8c8d;
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
+
+        /* Notifikasi */
+        .notification {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
 
-<?php if (isset($_SESSION['notif'])): ?>
-    <!-- Pesan notifikasi jika ada -->
-    <div style="background-color: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
-        <?= $_SESSION['notif'] ?>
+<div class="container">
+
+    <?php if (isset($_SESSION['notif'])): ?>
+        <div class="notification">
+            <?= htmlspecialchars($_SESSION['notif']) ?>
+        </div>
+        <?php unset($_SESSION['notif']); ?>
+    <?php endif; ?>
+
+    <h2>Riwayat Transaksi Saya</h2>
+
+    <!-- Tombol cetak ke PDF -->
+    <div style="text-align: center; margin-bottom: 20px;">
+        <a href="cetak_transaksi_pdf.php" target="_blank" class="btn">🖨️ Cetak PDF</a>
     </div>
-    <?php unset($_SESSION['notif']); ?>
-<?php endif; ?>
 
-<h2>Riwayat Transaksi Saya</h2>
-
-<!-- Tombol cetak ke PDF -->
-<a href="cetak_transaksi_pdf.php" target="_blank" class="btn">🖨️ Cetak PDF</a>
-
-<?php if ($result->num_rows === 0): ?>
-    <!-- Kalau belum ada transaksi -->
-    <p class="no-transaksi">Belum ada transaksi peminjaman buku.</p>
-<?php else: ?>
-    <!-- Tabel transaksi -->
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Judul Buku</th>
-            <th>Tanggal Pinjam</th>
-            <th>Tanggal Kembali</th>
-            <th>Total Harga</th>
-            <th>Status</th>
-        </tr>
-
-        <?php while ($row = $result->fetch_assoc()): ?>
-            <?php
-                // Hitung total harga sewa berdasarkan jumlah hari
-                $tanggal_pinjam = new DateTime($row['tanggal_pinjam']);
-                $tanggal_kembali = new DateTime($row['tanggal_kembali']);
-                $selisih = $tanggal_pinjam->diff($tanggal_kembali)->days;
-                if ($selisih < 0) $selisih = 0;
-
-                $total_harga = $selisih * $row['harga_per_hari'];
-            ?>
+    <?php if ($result->num_rows === 0): ?>
+        <p class="no-transaksi">Belum ada transaksi peminjaman buku.</p>
+    <?php else: ?>
+        <table>
             <tr>
-                <td><?= $row['id'] ?></td>
-                <td><?= htmlspecialchars($row['judul_buku']) ?></td>
-                <td><?= $row['tanggal_pinjam'] ?></td>
-                <td><?= $row['tanggal_kembali'] ?></td>
-                <td>Rp <?= number_format($total_harga, 0, ',', '.') ?></td>
-                <td>
-                    <?php if ($row['status'] == 'Dipinjam'): ?>
-                        <span class="status-dipinjam"><?= $row['status'] ?></span><br><br>
-
-                        <!-- Tombol untuk mengembalikan buku -->
-                        <form method="POST" action="kembalikan_buku.php" onsubmit="return confirm('Yakin ingin mengembalikan buku ini?');">
-                            <input type="hidden" name="id_transaksi" value="<?= $row['id'] ?>">
-                            <button type="submit" style="padding: 5px 10px; border: none; background-color: orange; color: white; border-radius: 4px;">Kembalikan</button>
-                        </form>
-                    <?php else: ?>
-                        <span class="status-kembali"><?= $row['status'] ?></span><br><br>
-
-                        <!-- Link untuk edit tanggal kembali -->
-                        <a href="edit_tanggal_kembali.php?id=<?= $row['id'] ?>" 
-                           style="padding: 5px 10px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; display: inline-block; margin-bottom: 5px;">
-                           Edit Tanggal Kembali
-                        </a><br>
-
-                        <!-- Tombol untuk menghapus transaksi -->
-                        <form method="POST" action="hapus_transaksi_user.php" onsubmit="return confirm('Yakin ingin menghapus transaksi ini?');">
-                            <input type="hidden" name="id_transaksi" value="<?= $row['id'] ?>">
-                            <button type="submit" class="hapus-button">Hapus</button>
-                        </form>
-                    <?php endif; ?>
-                </td>
+                <th>ID</th>
+                <th>Judul Buku</th>
+                <th>Tanggal Pinjam</th>
+                <th>Tanggal Kembali</th>
+                <th>Total Harga</th>
+                <th>Status & Aksi</th>
             </tr>
-        <?php endwhile; ?>
-    </table>
-<?php endif; ?>
 
-<!-- Tombol kembali ke dashboard -->
-<a href="user_dashboard.php" class="btn">← Kembali ke Dashboard</a>
+            <?php while ($row = $result->fetch_assoc()): ?>
+                <?php
+                    $tanggal_pinjam = new DateTime($row['tanggal_pinjam']);
+                    $tanggal_kembali = new DateTime($row['tanggal_kembali']);
+                    $selisih = $tanggal_pinjam->diff($tanggal_kembali)->days;
+                    if ($selisih < 0) $selisih = 0;
+                    $total_harga = $selisih * $row['harga_per_hari'];
+                ?>
+                <tr>
+                    <td><?= $row['id'] ?></td>
+                    <td><?= htmlspecialchars($row['judul_buku']) ?></td>
+                    <td><?= $row['tanggal_pinjam'] ?></td>
+                    <td><?= $row['tanggal_kembali'] ?></td>
+                    <td>Rp <?= number_format($total_harga, 0, ',', '.') ?></td>
+                    <td>
+                        <?php if ($row['status'] == 'Dipinjam'): ?>
+                            <span class="status-dipinjam"><?= $row['status'] ?></span><br><br>
+                            <form method="POST" action="kembalikan_buku.php" onsubmit="return confirm('Yakin ingin mengembalikan buku ini?');">
+                                <input type="hidden" name="id_transaksi" value="<?= $row['id'] ?>">
+                                <button type="submit" class="kembalikan-button">Kembalikan</button>
+                            </form>
+                        <?php else: ?>
+                            <span class="status-kembali"><?= $row['status'] ?></span><br><br>
+                            <a href="edit_tanggal_kembali.php?id=<?= $row['id'] ?>" class="edit-link">Edit Tanggal Kembali</a><br>
+                            <form method="POST" action="hapus_transaksi_user.php" onsubmit="return confirm('Yakin ingin menghapus transaksi ini?');">
+                                <input type="hidden" name="id_transaksi" value="<?= $row['id'] ?>">
+                                <button type="submit" class="hapus-button">Hapus</button>
+                            </form>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endwhile; ?>
+        </table>
+    <?php endif; ?>
+
+    <div style="text-align: center; margin-top: 25px;">
+        <a href="user_dashboard.php" class="btn">← Kembali ke Dashboard</a>
+    </div>
+
+</div>
 
 </body>
 </html>
-<!--ALTER TABLE transactions AUTO_INCREMENT = 1;-->
